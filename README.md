@@ -63,4 +63,9 @@ Copiar código
 ## 🖼️ Ícones e assets
 
 - Ícones em diferentes tamanhos: 16px, 32px, 48px e 128px  
-- Imagem de referência em `src/assets/focus.jpg`  
+- Imagem de referência em `src/assets/focus.jpg`
+
+---
+
+## GitHub Pages
+https://edumanzur.github.io/bootcamp2-chrome-ext-Eduardo-Manzur/
