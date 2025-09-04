@@ -1,69 +1,70 @@
-// Elementos do popup
 const siteInput = document.getElementById("siteInput");
 const addSiteBtn = document.getElementById("addSiteBtn");
 const blockedList = document.getElementById("blockedList");
 const startFocusBtn = document.getElementById("startFocusBtn");
 const stopFocusBtn = document.getElementById("stopFocusBtn");
 
-// Lista de sites bloqueados (vai ser carregada do storage)
-let blockedSites = [];
+// Conexão persistente com o service worker
+const port = chrome.runtime.connect({ name: "popup-connection" });
 
-// Função para atualizar a lista no popup
-function renderList() {
-  blockedList.innerHTML = "";
-  blockedSites.forEach((site, index) => {
-    const li = document.createElement("li");
-    li.textContent = site;
+// Atualiza a lista de sites no popup
+function updateList() {
+  chrome.storage.sync.get(["blockedSites"], (data) => {
+    blockedList.innerHTML = "";
+    if (data.blockedSites) {
+      data.blockedSites.forEach(site => {
+        const li = document.createElement("li");
+        li.style.display = "flex";
+        li.style.justifyContent = "space-between";
+        li.style.alignItems = "center";
+        li.style.marginBottom = "5px";
 
-    // Botão remover
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "X";
-    removeBtn.addEventListener("click", () => {
-      blockedSites.splice(index, 1);
-      saveBlockedSites();
-      renderList();
-    });
+        li.textContent = site;
 
-    li.appendChild(removeBtn);
-    blockedList.appendChild(li);
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remover";
+        removeBtn.style.marginLeft = "10px";
+        removeBtn.addEventListener("click", () => removeSite(site));
+
+        li.appendChild(removeBtn);
+        blockedList.appendChild(li);
+      });
+    }
   });
 }
 
-// Salvar lista no chrome.storage
-function saveBlockedSites() {
-  chrome.storage.sync.set({ blockedSites }, () => {
-    console.log("Sites salvos:", blockedSites);
-  });
-}
-
-// Carregar lista do chrome.storage
-function loadBlockedSites() {
-  chrome.storage.sync.get("blockedSites", (data) => {
-    blockedSites = data.blockedSites || [];
-    renderList();
-  });
-}
-
-// Adicionar site à lista
+// Adicionar site
 addSiteBtn.addEventListener("click", () => {
   const site = siteInput.value.trim();
-  if (site && !blockedSites.includes(site)) {
-    blockedSites.push(site);
-    saveBlockedSites();
-    renderList();
-    siteInput.value = "";
-  }
+  if (!site) return;
+
+  chrome.storage.sync.get(["blockedSites"], (data) => {
+    const list = data.blockedSites || [];
+    if (!list.includes(site)) {
+      list.push(site);
+      chrome.storage.sync.set({ blockedSites: list }, updateList);
+      siteInput.value = "";
+    }
+  });
 });
 
-// Iniciar foco
+// Remover site
+function removeSite(site) {
+  chrome.storage.sync.get(["blockedSites"], (data) => {
+    let list = data.blockedSites || [];
+    list = list.filter(s => s !== site);
+    chrome.storage.sync.set({ blockedSites: list }, updateList);
+  });
+}
+
+// Start / Stop Focus
 startFocusBtn.addEventListener("click", () => {
-  chrome.runtime.sendMessage({ action: "startFocus" });
+  port.postMessage({ action: "startFocus" });
 });
 
-// Parar foco
 stopFocusBtn.addEventListener("click", () => {
-  chrome.runtime.sendMessage({ action: "stopFocus" });
+  port.postMessage({ action: "stopFocus" });
 });
 
-// Inicializar
-loadBlockedSites();
+// Inicializa lista ao abrir popup
+updateList();
