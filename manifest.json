@@ -6,8 +6,8 @@
   "icons": {
     "16": "icons/focus16.png",
     "32": "icons/focus32.png",
-    "48": "icons/focus48.png",
-    "128": "icons/focus128.png"
+    "48": "icons/focus48.jpg",
+    "128": "icons/focus128.jpg"
   },
   "action": {
     "default_title": "Focus",
