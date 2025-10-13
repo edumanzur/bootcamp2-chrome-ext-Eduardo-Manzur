@@ -1,0 +1,25 @@
+{
+  "name": "focus-extension",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Extensão Chrome para bloqueio de sites e melhoria de foco",
+  "author": "Eduardo Manzur",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edumanzur/Focus.git"
+  },
+  "scripts": {
+    "build": "node scripts/build-extension.mjs",
+    "test:e2e": "playwright test --reporter=list,html",
+    "test": "npm run build && npm run test:e2e",
+    "ci": "npm ci && npm run test",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "@types/node": "^20.0.0",
+    "archiver": "^7.0.0",
+    "typescript": "^5.0.0"
+  }
+}

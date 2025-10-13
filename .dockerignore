@@ -1,0 +1,33 @@
+# Git
+.git/
+.gitignore
+
+# Dependencies (will be installed in container)
+node_modules/
+
+# Build artifacts (will be generated in container)
+dist/
+extension.zip
+
+# Test reports
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Development files
+.env
+.env.local
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation (not needed in container)
+docs/
+*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
