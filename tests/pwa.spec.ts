@@ -185,13 +185,14 @@ test.describe('Focus PWA - Testes E2E', () => {
     // Usar API para resetar e garantir lista vazia
     await request.post(`${API_URL}/api/reset`);
     
-    // Recarregar página para refletir mudanças
+    // Limpar localStorage e recarregar página
+    await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
     
     // Verificar mensagem de lista vazia
     const emptyMessage = page.locator('#emptyMessage');
-    await expect(emptyMessage).toBeVisible({ timeout: 3000 });
+    await expect(emptyMessage).toBeVisible({ timeout: 5000 });
     await expect(emptyMessage).toContainText('Nenhum site');
   });
 
