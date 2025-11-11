@@ -181,25 +181,28 @@ test.describe('Focus PWA - Testes E2E', () => {
     await expect(onlineStatus).toContainText('Online');
   });
 
-  test('Lista vazia mostra mensagem apropriada', async ({ page, request }) => {
-    // Usar API para resetar e garantir lista vazia
+  test('Lista vazia mostra mensagem apropriada', async ({ context, request }) => {
+    // Garantir que a API está realmente vazia
     await request.post(`${API_URL}/api/reset`);
     
-    // Limpar localStorage e recarregar página
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    // Criar nova página com contexto limpo (sem localStorage)
+    const page = await context.newPage();
+    await page.goto(BASE_URL, { waitUntil: 'networkidle' });
     
-    // Aguardar que a lista seja atualizada (fetch da API)
-    await page.waitForTimeout(1500);
+    // Aguardar renderização
+    await page.waitForTimeout(500);
     
     // Verificar que não há itens na lista
     const listItems = page.locator('#blockedList li');
-    await expect(listItems).toHaveCount(0);
+    await expect(listItems).toHaveCount(0, { timeout: 5000 });
     
     // Verificar mensagem de lista vazia
     const emptyMessage = page.locator('#emptyMessage');
     await expect(emptyMessage).toBeVisible({ timeout: 5000 });
     await expect(emptyMessage).toContainText('Nenhum site');
+    
+    // Fechar página
+    await page.close();
   });
 
   test('Adicionar site via Enter key', async ({ page }) => {
