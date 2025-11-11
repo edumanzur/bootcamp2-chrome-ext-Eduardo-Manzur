@@ -438,12 +438,13 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 
 ## 👥 Autores e Colaboradores
 
-**Desenvolvedor Principal:**  
+**Desenvolvedores:**  
 - **Eduardo Manzur** - [@edumanzur](https://github.com/edumanzur)
-
-**Colaboradores:**  
-<!-- Adicione colaboradores aqui seguindo o formato abaixo -->
-<!-- - Nome do Colaborador - [@username](https://github.com/username) - Descrição da contribuição -->
+- **Guilherme Viera** - [@GUILHERME-LA](https://github.com/GUILHERME-LA)
+- **Guilherme Rocha** - [@GuidaGaita](https://github.com/GuidaGaita)
+- **Gabriel Becker** - [BudaBecker](https://github.com/BudaBecker)
+- **Mateus Omaki**
+- **Marcos Morais**
 
 ---
 
@@ -485,54 +486,4 @@ Bootcamp II - Desenvolvimento Web Avançado
 - 🌐 **PWA ao vivo**: https://edumanzur.github.io/bootcamp2-chrome-ext-Eduardo-Manzur/
 - 💻 **Repositório**: https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur
 - 🚀 **CI/CD Status**: [GitHub Actions](https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur/actions)
-
----
-
-## 📸 Screenshots
-
-### 💻 Interface Desktop
-![Focus PWA Desktop](apps/web/public/icons/focus128.jpg)
-
-### 📱 Interface Mobile
-*PWA totalmente responsivo em dispositivos móveis*
-
-### 📊 Estatísticas e Histórico
-*Acompanhe seu progresso em tempo real*
-
----
-
-## 🎯 Roadmap Futuro
-
-- [ ] Sincronização entre dispositivos (backend persistente)
-- [ ] Notificações push
-- [ ] Modo Pomodoro integrado
-- [ ] Relatórios semanais/mensais
-- [ ] Gamificação (badges, streaks)
-- [ ] Tema escuro/claro
-- [ ] Export de dados (CSV/JSON)
-- [ ] Integração com calendário
-
----
-
-## 💬 Suporte
-
-Encontrou um bug? Tem uma sugestão?
-
-- 🐛 **Issues**: [Abrir issue](https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur/issues)
-- 💡 **Discussões**: [GitHub Discussions](https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur/discussions)
-- 📧 **Email**: edumanzur@example.com
-
----
-
-<div align="center">
-
-**Desenvolvido com ❤️ por [Eduardo Manzur](https://github.com/edumanzur)**
-
-⭐ Se este projeto te ajudou, considere dar uma estrela!
-
-[🌐 Ver PWA](https://edumanzur.github.io/bootcamp2-chrome-ext-Eduardo-Manzur/) • 
-[📖 Documentação](https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur/wiki) • 
-[🐛 Reportar Bug](https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur/issues)
-
-</div>
 
