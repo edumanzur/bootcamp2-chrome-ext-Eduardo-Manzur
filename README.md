@@ -442,8 +442,8 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 - **Eduardo Manzur** - [@edumanzur](https://github.com/edumanzur)
 - **Guilherme Viera** - [@GUILHERME-LA](https://github.com/GUILHERME-LA)
 - **Guilherme Rocha** - [@GuidaGaita](https://github.com/GuidaGaita)
-- **Gabriel Becker** - [BudaBecker](https://github.com/BudaBecker)
-- **Mateus Omaki**
+- **Gabriel Becker** - [@BudaBecker](https://github.com/BudaBecker)
+- **Mateus Omaki** - [@MasayoshiRen](https://github.com/MasayoshiRen)
 - **Marcos Morais**
 
 ---
