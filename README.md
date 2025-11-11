@@ -438,57 +438,19 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 
 ## 👥 Autores e Colaboradores
 
-### 👨‍💻 Desenvolvedor Principal
+**Desenvolvedor Principal:**  
+- **Eduardo Manzur** - [@edumanzur](https://github.com/edumanzur)
 
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/edumanzur">
-        <img src="https://github.com/edumanzur.png" width="100px;" alt="Eduardo Manzur"/><br />
-        <sub><b>Eduardo Manzur</b></sub>
-      </a><br />
-      <sub>Desenvolvedor Full-Stack</sub><br />
-      📧 <a href="mailto:edumanzur@example.com">Contato</a>
-    </td>
-  </tr>
-</table>
+**Colaboradores:**  
+<!-- Adicione colaboradores aqui seguindo o formato abaixo -->
+<!-- - Nome do Colaborador - [@username](https://github.com/username) - Descrição da contribuição -->
 
-### 🤝 Colaboradores
+---
 
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/COLABORADOR1">
-        <img src="https://github.com/COLABORADOR1.png" width="80px;" alt="Colaborador 1"/><br />
-        <sub><b>Nome Colaborador 1</b></sub>
-      </a><br />
-      <sub>Contribuições</sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/COLABORADOR2">
-        <img src="https://github.com/COLABORADOR2.png" width="80px;" alt="Colaborador 2"/><br />
-        <sub><b>Nome Colaborador 2</b></sub>
-      </a><br />
-      <sub>Contribuições</sub>
-    </td>
-    <td align="center">
-      <a href="https://github.com/COLABORADOR3">
-        <img src="https://github.com/COLABORADOR3.png" width="80px;" alt="Colaborador 3"/><br />
-        <sub><b>Nome Colaborador 3</b></sub>
-      </a><br />
-      <sub>Contribuições</sub>
-    </td>
-  </tr>
-</table>
-
-> **Nota**: Substitua `COLABORADOR1`, `COLABORADOR2`, `COLABORADOR3` pelos usernames reais do GitHub dos seus colaboradores.
-
-### 🎓 Orientação Acadêmica
+## 🎓 Orientação Acadêmica
 
 **Prof. Romes**  
 Bootcamp II - Desenvolvimento Web Avançado
-
-> *"Automatize tudo que puder e trate sua aplicação como software de produção."*
 
 ---
 
