@@ -28,7 +28,7 @@ test.describe('Focus PWA - Testes E2E', () => {
 
   test('PWA manifest está configurado', async ({ page }) => {
     const manifestLink = page.locator('link[rel="manifest"]');
-    await expect(manifestLink).toHaveAttribute('href', '/manifest.webmanifest');
+    await expect(manifestLink).toHaveAttribute('href', './manifest.webmanifest');
     
     // Verificar se o manifest pode ser carregado
     const response = await page.goto(`${BASE_URL}/manifest.webmanifest`);
@@ -182,11 +182,13 @@ test.describe('Focus PWA - Testes E2E', () => {
   });
 
   test('Lista vazia mostra mensagem apropriada', async ({ page }) => {
+    // Configurar handler de dialog UMA VEZ antes do loop
+    page.on('dialog', dialog => dialog.accept());
+    
     // Resetar e garantir lista vazia removendo todos os sites
     const sites = await page.locator('#blockedList li').all();
     
     for (const site of sites) {
-      page.on('dialog', dialog => dialog.accept());
       await site.locator('button:has-text("Remover")').click();
       await page.waitForTimeout(200);
     }
