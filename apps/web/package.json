@@ -1,0 +1,23 @@
+{
+  "name": "focus-pwa",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Focus PWA - Progressive Web App para gerenciamento de foco",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "workbox-window": "^7.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0",
+    "vite": "^5.0.0",
+    "vite-plugin-pwa": "^0.17.0",
+    "vitest": "^1.0.0"
+  }
+}

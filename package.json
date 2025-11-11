@@ -1,8 +1,8 @@
 {
-  "name": "focus-extension",
+  "name": "focus-pwa-monorepo",
   "version": "1.0.0",
   "type": "module",
-  "description": "Extensão Chrome para bloqueio de sites e melhoria de foco",
+  "description": "Focus PWA - Progressive Web App com backend Node.js",
   "author": "Eduardo Manzur",
   "license": "MIT",
   "repository": {
@@ -10,16 +10,42 @@
     "url": "https://github.com/edumanzur/Focus.git"
   },
   "scripts": {
-    "build": "node scripts/build-extension.mjs",
-    "test:e2e": "playwright test --reporter=list,html",
-    "test": "npm run build && npm run test:e2e",
+    "setup": "npm install && cd apps/api && npm install && cd ../web && npm install",
+    "dev:api": "cd apps/api && npm start",
+    "dev:web": "cd apps/web && npm run dev",
+    "build:api": "cd apps/api && npm install --production",
+    "build:web": "cd apps/web && npm run build",
+    "build": "npm run build:api && npm run build:web",
+    "test:api": "cd apps/api && npm test --if-present",
+    "test:web": "cd apps/web && npm test --if-present",
+    "test:e2e": "playwright test",
+    "test": "npm run test:api && npm run test:web && npm run test:e2e",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
     "ci": "npm ci && npm run test",
-    "report": "npx playwright show-report"
+    "report": "npx playwright show-report",
+    "lighthouse": "lhci autorun",
+    "clean": "rm -rf node_modules apps/*/node_modules apps/*/dist"
   },
   "devDependencies": {
-    "@playwright/test": "^1.46.0",
-    "@types/node": "^20.0.0",
-    "archiver": "^7.0.0",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^20.19.24",
     "typescript": "^5.0.0"
-  }
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "keywords": [
+    "pwa",
+    "progressive-web-app",
+    "focus",
+    "productivity",
+    "node",
+    "express",
+    "docker",
+    "playwright"
+  ]
 }

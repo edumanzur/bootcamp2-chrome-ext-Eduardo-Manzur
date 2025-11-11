@@ -1,11 +1,68 @@
+version: '3.8'
+
 services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: focus-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - focus-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: focus-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - focus-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   e2e:
     build: .
     image: bootcamp/ext-e2e:latest
     environment:
       - CI=true
+      - E2E_BASE_URL=http://web
     volumes:
       - ./:/app
     working_dir: /app
     command: npm run test:e2e
     shm_size: 2gb
+    depends_on:
+      - web
+      - api
+    networks:
+      - focus-network
+
+networks:
+  focus-network:
+    driver: bridge
+
+volumes:
+  api_data:

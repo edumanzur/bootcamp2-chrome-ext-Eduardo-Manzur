@@ -6,14 +6,30 @@ const distPath = path.resolve(process.cwd(), 'dist');
 export default defineConfig({
   testDir: './tests',
   timeout: 30000, // 30 segundos por teste
-  fullyParallel: false, // Testes em série para estabilidade com extensões
+  fullyParallel: true, // Testes em paralelo
   forbidOnly: !!process.env.CI, // Evita .only no CI
   retries: process.env.CI ? 2 : 0, // Retry no CI
-  workers: 1, // Apenas 1 worker para extensões
+  workers: process.env.CI ? 1 : undefined,
   
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }]
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'test-results.json' }]
+  ],
+  
+  webServer: process.env.CI ? undefined : [
+    {
+      command: 'cd apps/api && npm start',
+      port: 3000,
+      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'cd apps/web && npm run dev',
+      port: 8080,
+      timeout: 120000,
+      reuseExistingServer: !process.env.CI,
+    },
   ],
   
   use: {
