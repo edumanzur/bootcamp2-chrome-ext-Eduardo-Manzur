@@ -1,4 +1,4 @@
-name: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI - Focus Extension
+name: CI/CD Pipelinename: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI - Focus Extension
 
 
 
@@ -14,7 +14,7 @@ on:
 
   workflow_dispatch:
 
-    branches: [ main ]on:
+    branches: [main]on:
 
 env:
 
@@ -22,101 +22,220 @@ env:
 
 
 
-jobs:    branches: [ main ]  push:
+jobs:    branches: [main]  push:
 
-  build-and-test:
+  build:
 
-    name: Build & Unit Tests  workflow_dispatch:
+    name: Build and Test  workflow_dispatch:
 
     runs-on: ubuntu-latest
 
-        branches: [ main ]on:on:
+        branches: [ main ]on:
 
     steps:
 
-      - name: Checkout codeenv:
+      - uses: actions/checkout@v4env:
 
-        uses: actions/checkout@v4
+      
 
-        NODE_VERSION: '20'  pull_request:
-
-      - name: Setup Node.js
-
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4  NODE_VERSION: '20'  pull_request:
 
         with:
 
-          node-version: ${{ env.NODE_VERSION }}jobs:    branches: [ main ]  push:  push:
+          node-version: ${{ env.NODE_VERSION }}
 
           cache: 'npm'
 
-        build-and-test:
+      jobs:    branches: [ main ]  push:
 
-      - name: Install root dependencies
+      - name: Install dependencies
 
-        run: npm ci    name: Build & Unit Tests  workflow_dispatch:
+        run: |  build-and-test:
+
+          npm ci
+
+          cd apps/api && npm ci    name: Build & Unit Tests  workflow_dispatch:
+
+          cd ../web && npm ci
+
+          runs-on: ubuntu-latest
+
+      - name: Build Web
+
+        working-directory: ./apps/web        branches: [ main ]on:on:
+
+        run: npm run build
+
+          steps:
+
+      - name: Upload dist
+
+        uses: actions/upload-artifact@v4      - name: Checkout codeenv:
+
+        with:
+
+          name: web-dist        uses: actions/checkout@v4
+
+          path: apps/web/dist
+
+        NODE_VERSION: '20'  pull_request:
+
+  e2e:
+
+    name: E2E Tests      - name: Setup Node.js
+
+    runs-on: ubuntu-latest
+
+    needs: build        uses: actions/setup-node@v4
+
+    
+
+    steps:        with:
+
+      - uses: actions/checkout@v4
+
+                node-version: ${{ env.NODE_VERSION }}jobs:    branches: [ main ]  push:  push:
+
+      - uses: actions/setup-node@v4
+
+        with:          cache: 'npm'
+
+          node-version: ${{ env.NODE_VERSION }}
+
+              build-and-test:
+
+      - name: Install dependencies
+
+        run: |      - name: Install root dependencies
+
+          npm ci
+
+          cd apps/api && npm ci        run: npm ci    name: Build & Unit Tests  workflow_dispatch:
+
+          cd ../web && npm ci
+
+          npx playwright install --with-deps chromium      
 
       
 
-      - name: Install API dependencies    runs-on: ubuntu-latest
+      - name: Start services      - name: Install API dependencies    runs-on: ubuntu-latest
 
-        working-directory: ./apps/api
+        run: docker-compose up -d
 
-        run: npm ci        branches: [ main, develop ]    branches: [ main ]
+              working-directory: ./apps/api
 
-      
+      - name: Wait for services
 
-      - name: Install Web dependencies    steps:
+        run: |        run: npm ci        branches: [ main, develop ]    branches: [ main ]
 
-        working-directory: ./apps/web
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
 
-        run: npm ci      - name: 📥 Checkout codeenv:
-
-      
-
-      - name: Run unit tests API        uses: actions/checkout@v4
-
-        working-directory: ./apps/api
-
-        run: npm test --if-present        NODE_VERSION: '20'  pull_request:  pull_request:
+          timeout 60 bash -c 'until curl -f http://localhost:8080; do sleep 2; done'      
 
       
 
-      - name: Run unit tests Web      - name: 🟢 Setup Node.js
+      - name: Run tests      - name: Install Web dependencies    steps:
 
-        working-directory: ./apps/web
+        run: npx playwright test
 
-        run: npm test --if-present        uses: actions/setup-node@v4
+              working-directory: ./apps/web
 
-      
+      - name: Upload report
 
-      - name: Build Web PWA        with:
-
-        working-directory: ./apps/web
-
-        run: npm run build          node-version: ${{ env.NODE_VERSION }}jobs:    branches: [ main ]    branches: [ main ]
-
-      
-
-      - name: Upload build artifacts          cache: 'npm'
+        if: always()        run: npm ci      - name: 📥 Checkout codeenv:
 
         uses: actions/upload-artifact@v4
 
-        with:        build-and-test:
+        with:      
 
-          name: web-dist
+          name: playwright-report
 
-          path: apps/web/dist      - name: 📦 Install root dependencies
+          path: playwright-report      - name: Run unit tests API        uses: actions/checkout@v4
 
-          retention-days: 7
+      
 
-        run: npm ci    name: Build & Unit Tests  workflow_dispatch:  workflow_dispatch: # Permite execução manual
+      - name: Stop services        working-directory: ./apps/api
 
-  e2e-tests:
+        if: always()
 
-    name: E2E Tests with Playwright      
+        run: docker-compose down        run: npm test --if-present        NODE_VERSION: '20'  pull_request:  pull_request:
 
-    runs-on: ubuntu-latest
+
+
+  deploy:      
+
+    name: Deploy to Pages
+
+    runs-on: ubuntu-latest      - name: Run unit tests Web      - name: 🟢 Setup Node.js
+
+    needs: [build, e2e]
+
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'        working-directory: ./apps/web
+
+    
+
+    permissions:        run: npm test --if-present        uses: actions/setup-node@v4
+
+      contents: read
+
+      pages: write      
+
+      id-token: write
+
+          - name: Build Web PWA        with:
+
+    environment:
+
+      name: github-pages        working-directory: ./apps/web
+
+      url: ${{ steps.deployment.outputs.page_url }}
+
+            run: npm run build          node-version: ${{ env.NODE_VERSION }}jobs:    branches: [ main ]    branches: [ main ]
+
+    steps:
+
+      - uses: actions/checkout@v4      
+
+      
+
+      - uses: actions/setup-node@v4      - name: Upload build artifacts          cache: 'npm'
+
+        with:
+
+          node-version: ${{ env.NODE_VERSION }}        uses: actions/upload-artifact@v4
+
+      
+
+      - name: Install and build        with:        build-and-test:
+
+        working-directory: ./apps/web
+
+        run: |          name: web-dist
+
+          npm ci
+
+          npm run build          path: apps/web/dist      - name: 📦 Install root dependencies
+
+      
+
+      - uses: actions/configure-pages@v4          retention-days: 7
+
+      
+
+      - uses: actions/upload-pages-artifact@v3        run: npm ci    name: Build & Unit Tests  workflow_dispatch:  workflow_dispatch: # Permite execução manual
+
+        with:
+
+          path: ./apps/web/dist  e2e-tests:
+
+      
+
+      - name: Deploy    name: E2E Tests with Playwright      
+
+        id: deployment
+
+        uses: actions/deploy-pages@v4    runs-on: ubuntu-latest
+
 
     needs: build-and-test      - name: 📦 Install API dependencies    runs-on: ubuntu-latest
 
