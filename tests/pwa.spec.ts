@@ -26,15 +26,15 @@ test.describe('Focus PWA - Testes E2E', () => {
     await expect(page.locator('#stopFocusBtn')).toBeVisible();
   });
 
-  test('PWA manifest está configurado', async ({ page }) => {
+  test('PWA manifest está configurado', async ({ page, request }) => {
     const manifestLink = page.locator('link[rel="manifest"]');
     await expect(manifestLink).toHaveAttribute('href', './manifest.webmanifest');
     
-    // Verificar se o manifest pode ser carregado
-    const response = await page.goto(`${BASE_URL}/manifest.webmanifest`);
-    expect(response?.status()).toBe(200);
+    // Verificar se o manifest pode ser carregado via API request
+    const response = await request.get(`${BASE_URL}/manifest.webmanifest`);
+    expect(response.status()).toBe(200);
     
-    const manifest = await response?.json();
+    const manifest = await response.json();
     expect(manifest).toHaveProperty('name');
     expect(manifest).toHaveProperty('short_name');
     expect(manifest).toHaveProperty('start_url');
@@ -181,17 +181,13 @@ test.describe('Focus PWA - Testes E2E', () => {
     await expect(onlineStatus).toContainText('Online');
   });
 
-  test('Lista vazia mostra mensagem apropriada', async ({ page }) => {
-    // Configurar handler de dialog UMA VEZ antes do loop
-    page.on('dialog', dialog => dialog.accept());
+  test('Lista vazia mostra mensagem apropriada', async ({ page, request }) => {
+    // Usar API para resetar e garantir lista vazia
+    await request.post(`${API_URL}/api/reset`);
     
-    // Resetar e garantir lista vazia removendo todos os sites
-    const sites = await page.locator('#blockedList li').all();
-    
-    for (const site of sites) {
-      await site.locator('button:has-text("Remover")').click();
-      await page.waitForTimeout(200);
-    }
+    // Recarregar página para refletir mudanças
+    await page.reload();
+    await page.waitForTimeout(500);
     
     // Verificar mensagem de lista vazia
     const emptyMessage = page.locator('#emptyMessage');
