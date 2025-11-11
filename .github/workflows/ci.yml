@@ -59,7 +59,7 @@ jobs:
           npx playwright install --with-deps chromium
       
       - name: Start services
-        run: docker compose up -d
+        run: docker compose up api web -d --build
       
       - name: Wait for services
         run: |
