@@ -188,7 +188,13 @@ test.describe('Focus PWA - Testes E2E', () => {
     // Limpar localStorage e recarregar página
     await page.evaluate(() => localStorage.clear());
     await page.reload();
-    await page.waitForTimeout(1000);
+    
+    // Aguardar que a lista seja atualizada (fetch da API)
+    await page.waitForTimeout(1500);
+    
+    // Verificar que não há itens na lista
+    const listItems = page.locator('#blockedList li');
+    await expect(listItems).toHaveCount(0);
     
     // Verificar mensagem de lista vazia
     const emptyMessage = page.locator('#emptyMessage');
