@@ -1,258 +1,513 @@
-name: CI/CD Pipeline - Focus PWAname: CI - Focus Extension
+name: CI/CD Pipeline - Focus PWAname: CI/CD Pipeline - Focus PWAname: CI - Focus Extension
 
 
 
-on:on:
+on:
 
-  push:  push:
+  push:
+
+    branches: [ main ]on:on:
+
+  pull_request:
+
+    branches: [ main ]  push:  push:
+
+  workflow_dispatch:
 
     branches: [ main, develop ]    branches: [ main ]
 
-  pull_request:  pull_request:
+env:
 
-    branches: [ main ]    branches: [ main ]
-
-  workflow_dispatch:  workflow_dispatch: # Permite execução manual
+  NODE_VERSION: '20'  pull_request:  pull_request:
 
 
 
-env:jobs:
+jobs:    branches: [ main ]    branches: [ main ]
 
-  NODE_VERSION: '20'  test-build:
+  build-and-test:
 
-    name: Build e Test E2E
+    name: Build & Unit Tests  workflow_dispatch:  workflow_dispatch: # Permite execução manual
 
-jobs:    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  build-and-test:    
+    
 
-    name: Build & Test    steps:
+    steps:
 
-    runs-on: ubuntu-latest      - name: Checkout código
+      - name: 📥 Checkout codeenv:jobs:
 
-            uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
-    strategy:      
+        NODE_VERSION: '20'  test-build:
 
-      matrix:      - name: Setup Node.js
+      - name: 🟢 Setup Node.js
 
-        node-version: [20]        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4    name: Build e Test E2E
 
-            with:
+        with:
 
-    steps:          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}jobs:    runs-on: ubuntu-latest
 
-      - name: 📥 Checkout code      
+          cache: 'npm'
 
-        uses: actions/checkout@v4      - name: Instalar dependências
+        build-and-test:    
 
-              run: npm install
+      - name: 📦 Install dependencies (Root)
 
-      - name: 🟢 Setup Node.js ${{ matrix.node-version }}      
+        run: npm ci    name: Build & Test    steps:
 
-        uses: actions/setup-node@v4      - name: Instalar Playwright Chromium
+      
 
-        with:        run: npx playwright install --with-deps chromium
+      - name: 📦 Install dependencies (API)    runs-on: ubuntu-latest      - name: Checkout código
 
-          node-version: ${{ matrix.node-version }}      
+        working-directory: ./apps/api
+
+        run: npm ci            uses: actions/checkout@v4
+
+      
+
+      - name: 📦 Install dependencies (Web)    strategy:      
+
+        working-directory: ./apps/web
+
+        run: npm ci      matrix:      - name: Setup Node.js
+
+      
+
+      - name: 🧪 Run unit tests (API)        node-version: [20]        uses: actions/setup-node@v4
+
+        working-directory: ./apps/api
+
+        run: npm test --if-present            with:
+
+      
+
+      - name: 🧪 Run unit tests (Web)    steps:          node-version: '20'
+
+        working-directory: ./apps/web
+
+        run: npm test --if-present      - name: 📥 Checkout code      
+
+      
+
+      - name: 🏗️ Build Web PWA        uses: actions/checkout@v4      - name: Instalar dependências
+
+        working-directory: ./apps/web
+
+        run: npm run build              run: npm install
+
+        env:
+
+          VITE_API_URL: https://focus-api.onrender.com      - name: 🟢 Setup Node.js ${{ matrix.node-version }}      
+
+      
+
+      - name: 📤 Upload build artifacts        uses: actions/setup-node@v4      - name: Instalar Playwright Chromium
+
+        uses: actions/upload-artifact@v4
+
+        with:        with:        run: npx playwright install --with-deps chromium
+
+          name: web-dist
+
+          path: apps/web/dist          node-version: ${{ matrix.node-version }}      
+
+          retention-days: 7
 
           cache: 'npm'      - name: Build da extensão
 
-              run: npm run build
+  e2e-tests:
 
-      - name: 📦 Install dependencies (API)      
+    name: E2E Tests with Playwright              run: npm run build
 
-        working-directory: ./apps/api      - name: Verificar arquivos gerados
+    runs-on: ubuntu-latest
 
-        run: npm ci        run: |
+    needs: build-and-test      - name: 📦 Install dependencies (API)      
 
-                ls -la dist/
+    
 
-      - name: 📦 Install dependencies (Web)          test -f dist/extension.zip && echo "✅ extension.zip criado" || echo "❌ extension.zip não encontrado"
+    steps:        working-directory: ./apps/api      - name: Verificar arquivos gerados
 
-        working-directory: ./apps/web      
+      - name: 📥 Checkout code
 
-        run: npm ci      - name: Executar testes E2E
+        uses: actions/checkout@v4        run: npm ci        run: |
 
-              run: npm run test:e2e
+      
 
-      - name: 🧪 Run unit tests (API)        continue-on-error: false
+      - name: 🟢 Setup Node.js                ls -la dist/
 
-        working-directory: ./apps/api      
+        uses: actions/setup-node@v4
 
-        run: npm test --if-present      - name: Publicar relatório do Playwright
+        with:      - name: 📦 Install dependencies (Web)          test -f dist/extension.zip && echo "✅ extension.zip criado" || echo "❌ extension.zip não encontrado"
 
-              if: always()
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: 🧪 Run unit tests (Web)        uses: actions/upload-artifact@v4
+              working-directory: ./apps/web      
 
-        working-directory: ./apps/web        with:
+      - name: 📦 Install dependencies
 
-        run: npm test --if-present          name: playwright-report
+        run: |        run: npm ci      - name: Executar testes E2E
 
-                path: playwright-report
+          npm ci
 
-      - name: 🏗️ Build Web PWA          retention-days: 30
+          cd apps/api && npm ci              run: npm run test:e2e
 
-        working-directory: ./apps/web      
+          cd ../web && npm ci
 
-        run: npm run build      - name: Publicar pacote da extensão
+            - name: 🧪 Run unit tests (API)        continue-on-error: false
 
-        env:        if: success()
+      - name: 📦 Install Playwright
 
-          VITE_API_URL: https://focus-api.onrender.com        uses: actions/upload-artifact@v4
+        run: npx playwright install --with-deps chromium        working-directory: ./apps/api      
+
+      
+
+      - name: 🐳 Start services with Docker Compose        run: npm test --if-present      - name: Publicar relatório do Playwright
+
+        run: |
+
+          docker-compose up -d api web              if: always()
+
+          docker-compose ps
+
+            - name: 🧪 Run unit tests (Web)        uses: actions/upload-artifact@v4
+
+      - name: ⏳ Wait for services
+
+        run: |        working-directory: ./apps/web        with:
+
+          echo "Aguardando API..."
+
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'        run: npm test --if-present          name: playwright-report
+
+          echo "Aguardando Web..."
+
+          timeout 60 bash -c 'until curl -f http://localhost:8080; do sleep 2; done'                path: playwright-report
+
+      
+
+      - name: 🧪 Run E2E tests      - name: 🏗️ Build Web PWA          retention-days: 30
+
+        run: npx playwright test
+
+        env:        working-directory: ./apps/web      
+
+          E2E_BASE_URL: http://localhost:8080
+
+          API_URL: http://localhost:3000        run: npm run build      - name: Publicar pacote da extensão
+
+      
+
+      - name: 📊 Upload Playwright Report        env:        if: success()
+
+        if: always()
+
+        uses: actions/upload-artifact@v4          VITE_API_URL: https://focus-api.onrender.com        uses: actions/upload-artifact@v4
+
+        with:
+
+          name: playwright-report              with:
+
+          path: playwright-report
+
+          retention-days: 30      - name: 📤 Upload build artifacts          name: extension-zip
+
+      
+
+      - name: 🐳 Stop Docker services        uses: actions/upload-artifact@v4          path: dist/extension.zip
+
+        if: always()
+
+        run: docker-compose down        with:          retention-days: 90
+
+
+
+  lighthouse:          name: web-dist      
+
+    name: Lighthouse CI
+
+    runs-on: ubuntu-latest          path: apps/web/dist      - name: Publicar dist completo
+
+    needs: build-and-test
+
+              retention-days: 7        if: success()
+
+    steps:
+
+      - name: 📥 Checkout code          uses: actions/upload-artifact@v4
+
+        uses: actions/checkout@v4
+
+        e2e-tests:        with:
+
+      - name: 🟢 Setup Node.js
+
+        uses: actions/setup-node@v4    name: E2E Tests with Playwright          name: extension-dist
+
+        with:
+
+          node-version: ${{ env.NODE_VERSION }}    runs-on: ubuntu-latest          path: dist/
+
+      
+
+      - name: 📦 Install dependencies    needs: build-and-test          retention-days: 30
+
+        run: |
+
+          npm ci    
+
+          cd apps/api && npm ci    steps:
+
+          cd ../web && npm ci      - name: 📥 Checkout code
+
+              uses: actions/checkout@v4
+
+      - name: 🐳 Start services      
+
+        run: |      - name: 🟢 Setup Node.js
+
+          docker-compose up -d api web        uses: actions/setup-node@v4
+
+          timeout 60 bash -c 'until curl -f http://localhost:8080; do sleep 2; done'        with:
+
+                node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📊 Run Lighthouse CI      
+
+        run: |      - name: 📦 Install Playwright
+
+          npm install -g @lhci/cli        run: |
+
+          lhci autorun          npm ci
+
+        env:          npx playwright install --with-deps chromium
+
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}      
+
+            - name: 🐳 Start services with Docker Compose
+
+      - name: 📤 Upload Lighthouse results        run: |
+
+        if: always()          docker-compose up -d api web
+
+        uses: actions/upload-artifact@v4          docker-compose ps
+
+        with:      
+
+          name: lighthouse-results      - name: ⏳ Wait for services
+
+          path: .lighthouseci        run: |
+
+          retention-days: 30          echo "Aguardando API..."
+
+                timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+
+      - name: 🐳 Stop services          echo "Aguardando Web..."
+
+        if: always()          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
+
+        run: docker-compose down      
+
+      - name: 🧪 Run E2E tests
+
+  deploy-pages:        run: npx playwright test tests/pwa.spec.ts
+
+    name: Deploy to GitHub Pages        env:
+
+    runs-on: ubuntu-latest          E2E_BASE_URL: http://localhost:8080
+
+    needs: [build-and-test, e2e-tests]          API_URL: http://localhost:3000
+
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'      
+
+          - name: 📸 Upload Playwright Report
+
+    permissions:        if: always()
+
+      contents: read        uses: actions/upload-artifact@v4
+
+      pages: write        with:
+
+      id-token: write          name: playwright-report
+
+              path: playwright-report/
+
+    environment:          retention-days: 7
+
+      name: github-pages      
+
+      url: ${{ steps.deployment.outputs.page_url }}      - name: 📊 Upload Test Results
+
+            if: always()
+
+    steps:        uses: actions/upload-artifact@v4
+
+      - name: 📥 Checkout code        with:
+
+        uses: actions/checkout@v4          name: test-results
+
+                path: test-results.json
+
+      - name: 🟢 Setup Node.js          retention-days: 7
+
+        uses: actions/setup-node@v4      
+
+        with:      - name: 🛑 Stop Docker Compose
+
+          node-version: ${{ env.NODE_VERSION }}        if: always()
+
+              run: docker-compose down
+
+      - name: 📦 Install dependencies (Web)  
+
+        working-directory: ./apps/web  lighthouse:
+
+        run: npm ci    name: Lighthouse Audit
+
+          runs-on: ubuntu-latest
+
+      - name: 🏗️ Build for Production    needs: build-and-test
+
+        working-directory: ./apps/web    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+        run: npm run build    
+
+        env:    steps:
+
+          VITE_API_URL: https://focus-api.onrender.com      - name: 📥 Checkout code
+
+              uses: actions/checkout@v4
+
+      - name: 📄 Setup Pages      
+
+        uses: actions/configure-pages@v4      - name: 📥 Download build artifacts
+
+              uses: actions/download-artifact@v4
+
+      - name: 📤 Upload artifact        with:
+
+        uses: actions/upload-pages-artifact@v3          name: web-dist
+
+        with:          path: apps/web/dist
+
+          path: ./apps/web/dist      
+
+            - name: 🐳 Start services
+
+      - name: 🚀 Deploy to GitHub Pages        run: docker-compose up -d
+
+        id: deployment      
+
+        uses: actions/deploy-pages@v4      - name: ⏳ Wait for web service
+
+        run: timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
+
+  docker-build:      
+
+    name: Build Docker Images      - name: 🔦 Run Lighthouse CI
+
+    runs-on: ubuntu-latest        run: |
+
+    needs: build-and-test          npm install -g @lhci/cli
+
+              lhci autorun --collect.url=http://localhost:8080 || echo "Lighthouse failed but continuing..."
+
+    steps:        env:
+
+      - name: 📥 Checkout code          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+        uses: actions/checkout@v4      
+
+            - name: 📤 Upload Lighthouse Report
+
+      - name: 🐳 Set up Docker Buildx        if: always()
+
+        uses: docker/setup-buildx-action@v3        uses: actions/upload-artifact@v4
 
               with:
 
-      - name: 📤 Upload build artifacts          name: extension-zip
+      - name: 🏗️ Build API Image          name: lighthouse-report
 
-        uses: actions/upload-artifact@v4          path: dist/extension.zip
+        uses: docker/build-push-action@v5          path: .lighthouseci/
 
-        with:          retention-days: 90
+        with:          retention-days: 7
 
-          name: web-dist      
+          context: ./apps/api      
 
-          path: apps/web/dist      - name: Publicar dist completo
+          file: ./apps/api/Dockerfile      - name: 🛑 Stop services
 
-          retention-days: 7        if: success()
+          push: false        if: always()
 
-          uses: actions/upload-artifact@v4
+          tags: focus-api:latest        run: docker-compose down
 
-  e2e-tests:        with:
+          cache-from: type=gha  
 
-    name: E2E Tests with Playwright          name: extension-dist
+          cache-to: type=gha,mode=max  deploy-pages:
 
-    runs-on: ubuntu-latest          path: dist/
+          name: Deploy to GitHub Pages
 
-    needs: build-and-test          retention-days: 30
+      - name: 🏗️ Build Web Image    runs-on: ubuntu-latest
 
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-      
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      
-      - name: 📦 Install Playwright
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
-      
-      - name: 🐳 Start services with Docker Compose
-        run: |
-          docker-compose up -d api web
-          docker-compose ps
-      
-      - name: ⏳ Wait for services
-        run: |
-          echo "Aguardando API..."
-          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
-          echo "Aguardando Web..."
-          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
-      
-      - name: 🧪 Run E2E tests
-        run: npx playwright test tests/pwa.spec.ts
-        env:
-          E2E_BASE_URL: http://localhost:8080
-          API_URL: http://localhost:3000
-      
-      - name: 📸 Upload Playwright Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
-      
-      - name: 📊 Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: test-results.json
-          retention-days: 7
-      
-      - name: 🛑 Stop Docker Compose
-        if: always()
-        run: docker-compose down
-  
-  lighthouse:
-    name: Lighthouse Audit
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-      
-      - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: web-dist
-          path: apps/web/dist
-      
-      - name: 🐳 Start services
-        run: docker-compose up -d
-      
-      - name: ⏳ Wait for web service
-        run: timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
-      
-      - name: 🔦 Run Lighthouse CI
-        run: |
-          npm install -g @lhci/cli
-          lhci autorun --collect.url=http://localhost:8080 || echo "Lighthouse failed but continuing..."
-        env:
-          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
-      
-      - name: 📤 Upload Lighthouse Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-report
-          path: .lighthouseci/
-          retention-days: 7
-      
-      - name: 🛑 Stop services
-        if: always()
-        run: docker-compose down
-  
-  deploy-pages:
-    name: Deploy to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: [build-and-test, e2e-tests]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    
+        uses: docker/build-push-action@v5    needs: [build-and-test, e2e-tests]
+
+        with:    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+          context: ./apps/web    
+
+          file: ./apps/web/Dockerfile    permissions:
+
+          push: false      contents: read
+
+          tags: focus-web:latest      pages: write
+
+          cache-from: type=gha      id-token: write
+
+          cache-to: type=gha,mode=max    
+
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-      
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      
-      - name: 📦 Install dependencies (Web)
-        working-directory: ./apps/web
-        run: npm ci
-      
-      - name: 🏗️ Build for production
-        working-directory: ./apps/web
-        run: npm run build
-        env:
-          VITE_API_URL: https://focus-api.onrender.com
+
+  summary:      name: github-pages
+
+    name: CI/CD Summary      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest    
+
+    needs: [build-and-test, e2e-tests, lighthouse, deploy-pages, docker-build]    steps:
+
+    if: always()      - name: 📥 Checkout code
+
+            uses: actions/checkout@v4
+
+    steps:      
+
+      - name: 📊 Generate Summary      - name: 🟢 Setup Node.js
+
+        run: |        uses: actions/setup-node@v4
+
+          echo "## 🎯 CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY        with:
+
+          echo "" >> $GITHUB_STEP_SUMMARY          node-version: ${{ env.NODE_VERSION }}
+
+          echo "### Jobs Status:" >> $GITHUB_STEP_SUMMARY      
+
+          echo "- Build & Tests: ${{ needs.build-and-test.result }}" >> $GITHUB_STEP_SUMMARY      - name: 📦 Install dependencies (Web)
+
+          echo "- E2E Tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY        working-directory: ./apps/web
+
+          echo "- Lighthouse: ${{ needs.lighthouse.result }}" >> $GITHUB_STEP_SUMMARY        run: npm ci
+
+          echo "- Deploy Pages: ${{ needs.deploy-pages.result }}" >> $GITHUB_STEP_SUMMARY      
+
+          echo "- Docker Build: ${{ needs.docker-build.result }}" >> $GITHUB_STEP_SUMMARY      - name: 🏗️ Build for production
+
+          echo "" >> $GITHUB_STEP_SUMMARY        working-directory: ./apps/web
+
+          echo "### 🔗 Links:" >> $GITHUB_STEP_SUMMARY        run: npm run build
+
+          echo "- [PWA ao vivo](https://edumanzur.github.io/bootcamp2-chrome-ext-Eduardo-Manzur/)" >> $GITHUB_STEP_SUMMARY        env:
+
+          echo "- [Repositório](https://github.com/edumanzur/bootcamp2-chrome-ext-Eduardo-Manzur)" >> $GITHUB_STEP_SUMMARY          VITE_API_URL: https://focus-api.onrender.com
+
       
       - name: 📋 Create documentation index
         run: |
