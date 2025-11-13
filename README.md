@@ -444,7 +444,7 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 - **Guilherme Rocha** - [@GuidaGaita](https://github.com/GuidaGaita)
 - **Gabriel Becker** - [@BudaBecker](https://github.com/BudaBecker)
 - **Mateus Omaki** - [@MasayoshiRen](https://github.com/MasayoshiRen)
-- **Marcos Morais**
+- **Marcos Morais** - [@Marcos-1401](https://github.com/Marcos-1401)
 
 ---
 
